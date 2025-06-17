@@ -73,5 +73,9 @@ To uninstall the service, run the following command as Administrator:
 ```
 sc.exe delete DuplicateCheckerService
 ```
+![image](https://github.com/user-attachments/assets/1a4432d5-9acf-41fa-8562-a0b906857e04)
 
-![image](https://github.com/user-attachments/assets/6a25acd4-87ba-4193-ab98-c1804726f72d)
+
+Here i copied two files with same images with differnet names but same content  
+![image](https://github.com/user-attachments/assets/02045ff7-1c88-49ca-8053-9605e9790277)
+
