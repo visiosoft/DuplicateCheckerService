@@ -72,4 +72,6 @@ Log entries include timestamps and full file paths.
 To uninstall the service, run the following command as Administrator:
 ```
 sc.exe delete DuplicateCheckerService
-``` 
+```
+
+![image](https://github.com/user-attachments/assets/6a25acd4-87ba-4193-ab98-c1804726f72d)
