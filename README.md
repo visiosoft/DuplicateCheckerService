@@ -35,8 +35,8 @@ The service can be configured by modifying the `appsettings.json` file:
 ```json
 {
   "ServiceSettings": {
-    "WatchDirectory": "C:\\WatchDirectory",  // Directory to monitor
-    "LogFilePath": "C:\\ServiceLogs\\log.txt",  // Path to log file
+    "WatchDirectory": "D:\\WatchDirectory",  // Directory to monitor
+    "LogFilePath": "D:\\ServiceLogs\\log.txt",  // Path to log file
     "CheckIntervalSeconds": 60,  // Interval between duplicate checks
     "HashBufferSize": 81920  // Buffer size for file hashing (80KB)
   }

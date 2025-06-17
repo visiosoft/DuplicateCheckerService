@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="*" 
+             Name="Directory Duplicate Checker Service" 
+             Language="1033" 
+             Version="1.0.0.0" 
+             Manufacturer="Your Company" 
+             UpgradeCode="PUT-GUID-HERE">
+        
+        <Package InstallerVersion="200" 
+                 Compressed="yes" 
+                 InstallScope="perMachine" />
+
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+        <MediaTemplate EmbedCab="yes" />
+
+        <Feature Id="ProductFeature" Title="DuplicateCheckerService" Level="1">
+            <ComponentGroupRef Id="ProductComponents" />
+        </Feature>
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLFOLDER" Name="DuplicateCheckerService">
+                    <Directory Id="LogFolder" Name="Logs" />
+                </Directory>
+            </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="DuplicateCheckerService" />
+            </Directory>
+        </Directory>
+
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Component Id="ServiceExecutable" Guid="*">
+                <File Id="ServiceExe" 
+                      Source="DuplicateCheckerService\bin\Release\net6.0\win-x64\publish\DuplicateCheckerService.exe" 
+                      KeyPath="yes" />
+            </Component>
+            <Component Id="ServiceDependencies" Guid="*">
+                <File Id="ServiceDll" 
+                      Source="DuplicateCheckerService\bin\Release\net6.0\win-x64\publish\DuplicateCheckerService.dll" 
+                      KeyPath="yes" />
+                <File Id="AppSettings" 
+                      Source="DuplicateCheckerService\bin\Release\net6.0\win-x64\publish\appsettings.json" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="LogFolder">
+            <Component Id="LogFolderComponent" Guid="*">
+                <CreateFolder />
+                <RemoveFolder Id="LogFolder" On="uninstall" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="ApplicationShortcut" Guid="*">
+                <Shortcut Id="ApplicationStartMenuShortcut" 
+                          Name="Duplicate Checker Service" 
+                          Description="Directory Duplicate Checker Service" 
+                          Target="[#ServiceExe]" 
+                          WorkingDirectory="INSTALLFOLDER" />
+                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+                <RegistryValue Root="HKCU" 
+                              Key="Software\DuplicateCheckerService" 
+                              Name="installed" 
+                              Type="integer" 
+                              Value="1" 
+                              KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+
+        <ComponentGroup Id="ProductComponents">
+            <ComponentRef Id="ServiceExecutable" />
+            <ComponentRef Id="ServiceDependencies" />
+            <ComponentRef Id="LogFolderComponent" />
+            <ComponentRef Id="ApplicationShortcut" />
+        </ComponentGroup>
+
+        <CustomAction Id="InstallService" 
+                      Execute="deferred" 
+                      Return="check" 
+                      Impersonate="no" 
+                      ExeCommand="[SystemFolder]sc.exe create DuplicateCheckerService binPath= &quot;[#ServiceExe]&quot; start= auto DisplayName= &quot;Directory Duplicate Checker Service&quot;" />
+
+        <CustomAction Id="StartService" 
+                      Execute="deferred" 
+                      Return="check" 
+                      Impersonate="no" 
+                      ExeCommand="[SystemFolder]sc.exe start DuplicateCheckerService" />
+
+        <CustomAction Id="StopService" 
+                      Execute="deferred" 
+                      Return="check" 
+                      Impersonate="no" 
+                      ExeCommand="[SystemFolder]sc.exe stop DuplicateCheckerService" />
+
+        <CustomAction Id="DeleteService" 
+                      Execute="deferred" 
+                      Return="check" 
+                      Impersonate="no" 
+                      ExeCommand="[SystemFolder]sc.exe delete DuplicateCheckerService" />
+
+        <InstallExecuteSequence>
+            <Custom Action="InstallService" After="InstallFiles">NOT Installed</Custom>
+            <Custom Action="StartService" After="InstallService">NOT Installed</Custom>
+            <Custom Action="StopService" Before="RemoveFiles">Installed</Custom>
+            <Custom Action="DeleteService" After="StopService">Installed</Custom>
+        </InstallExecuteSequence>
+    </Product>
+</Wix> 

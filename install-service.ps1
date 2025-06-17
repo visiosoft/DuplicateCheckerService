@@ -2,7 +2,7 @@
 $serviceName = "DuplicateCheckerService"
 $displayName = "Directory Duplicate Checker Service"
 $description = "Monitors a directory for file changes and detects duplicate files"
-$exePath = Join-Path $PSScriptRoot "DuplicateCheckerService.exe"
+$exePath = Join-Path $PSScriptRoot "bin\Release\net6.0\win-x64\publish\DuplicateCheckerService.exe"
 
 # Stop and remove existing service if it exists
 if (Get-Service $serviceName -ErrorAction SilentlyContinue) {

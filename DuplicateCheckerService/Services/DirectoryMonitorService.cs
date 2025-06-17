@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using DuplicateCheckerService.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace DuplicateCheckerService.Services
 {
@@ -37,6 +38,7 @@ namespace DuplicateCheckerService.Services
             if (!string.IsNullOrEmpty(_settings.WatchDirectory) && !Directory.Exists(_settings.WatchDirectory))
             {
                 Directory.CreateDirectory(_settings.WatchDirectory);
+                Log.Information("Created watch directory: {WatchDirectory}", _settings.WatchDirectory);
             }
 
             _watcher = new FileSystemWatcher(_settings.WatchDirectory)
@@ -48,11 +50,13 @@ namespace DuplicateCheckerService.Services
             _watcher.Created += OnFileCreated;
             _watcher.Deleted += OnFileDeleted;
             _watcher.Changed += OnFileChanged;
+
+            Log.Information("Directory Monitor Service initialized. Watching directory: {WatchDirectory}", _settings.WatchDirectory);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Directory Monitor Service is starting.");
+            Log.Information("Directory Monitor Service is starting.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -63,8 +67,7 @@ namespace DuplicateCheckerService.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred while checking for duplicates");
-                    await LogToFile($"Error: {ex.Message}");
+                    Log.Error(ex, "Error occurred while checking for duplicates");
                 }
             }
         }
@@ -73,12 +76,12 @@ namespace DuplicateCheckerService.Services
         {
             try
             {
-                await LogToFile($"File created: {e.FullPath}");
+                Log.Information("File created: {FilePath}", e.FullPath);
                 await UpdateFileHash(e.FullPath);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error processing file creation: {e.FullPath}");
+                Log.Error(ex, "Error processing file creation: {FilePath}", e.FullPath);
             }
         }
 
@@ -86,12 +89,12 @@ namespace DuplicateCheckerService.Services
         {
             try
             {
-                await LogToFile($"File deleted: {e.FullPath}");
+                Log.Information("File deleted: {FilePath}", e.FullPath);
                 _fileHashes.Remove(e.FullPath);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error processing file deletion: {e.FullPath}");
+                Log.Error(ex, "Error processing file deletion: {FilePath}", e.FullPath);
             }
         }
 
@@ -99,12 +102,12 @@ namespace DuplicateCheckerService.Services
         {
             try
             {
-                await LogToFile($"File modified: {e.FullPath}");
+                Log.Information("File modified: {FilePath}", e.FullPath);
                 await UpdateFileHash(e.FullPath);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error processing file modification: {e.FullPath}");
+                Log.Error(ex, "Error processing file modification: {FilePath}", e.FullPath);
             }
         }
 
@@ -117,10 +120,11 @@ namespace DuplicateCheckerService.Services
                 var hash = await Task.Run(() => sha256.ComputeHash(stream));
                 var hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
                 _fileHashes[filePath] = hashString;
+                Log.Debug("Updated hash for file: {FilePath} - Hash: {Hash}", filePath, hashString);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error computing hash for file: {filePath}");
+                Log.Error(ex, "Error computing hash for file: {FilePath}", filePath);
                 throw;
             }
         }
@@ -135,7 +139,7 @@ namespace DuplicateCheckerService.Services
             foreach (var group in duplicateGroups)
             {
                 var files = string.Join(", ", group.Select(x => x.Key));
-                await LogToFile($"Duplicate files detected with hash {group.Key}: {files}");
+                Log.Warning("Duplicate files detected with hash {Hash}: {Files}", group.Key, files);
             }
         }
 
@@ -154,6 +158,7 @@ namespace DuplicateCheckerService.Services
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
+            Log.Information("Directory Monitor Service is stopping.");
             _watcher.EnableRaisingEvents = false;
             _watcher.Dispose();
             await base.StopAsync(cancellationToken);
