@@ -13,19 +13,51 @@ A Windows Service that monitors a specified directory for file changes and detec
 ## Prerequisites
 
 - Windows operating system
-- .NET 6.0 or later
+- .NET 6.0 SDK or later
 - Administrator privileges for installation
+
+## Building the Service
+
+1. Clone the repository:
+   ```
+   git clone [repository-url]
+   cd DuplicateCheckerService
+   ```
+
+2. Build the service as a single executable:
+   ```
+   cd DuplicateCheckerService
+   dotnet publish -c Release
+   ```
+
+   The executable will be created at:
+   `DuplicateCheckerService\bin\Release\net6.0\win-x64\publish\DuplicateCheckerService.exe`
 
 ## Installation
 
-1. Build the solution:
-   ```
-   dotnet publish -c Release -r win-x64 --self-contained true
-   ```
+### Method 1: Using PowerShell Script (Recommended)
 
-2. Run the installation script as Administrator:
+1. Open PowerShell as Administrator
+2. Navigate to the service directory:
+   ```
+   cd path\to\DuplicateCheckerService
+   ```
+3. Run the installation script:
    ```
    .\install-service.ps1
+   ```
+
+### Method 2: Manual Installation
+
+1. Copy the following files to your desired location:
+   - `DuplicateCheckerService.exe` (from the publish directory)
+   - `appsettings.json` (from the publish directory)
+
+2. Open PowerShell as Administrator and run:
+   ```
+   sc.exe create DuplicateCheckerService binPath= "path\to\DuplicateCheckerService.exe" start= auto DisplayName= "Directory Duplicate Checker Service"
+   sc.exe description DuplicateCheckerService "Monitors a directory for file changes and detects duplicate files"
+   sc.exe start DuplicateCheckerService
    ```
 
 ## Configuration
@@ -42,6 +74,13 @@ The service can be configured by modifying the `appsettings.json` file:
   }
 }
 ```
+
+## Verifying Installation
+
+1. Open Windows Services (services.msc)
+2. Look for "Directory Duplicate Checker Service"
+3. Verify that the service is running
+4. Check the configured log file for activity
 
 ## Logging
 
@@ -72,4 +111,20 @@ Log entries include timestamps and full file paths.
 To uninstall the service, run the following command as Administrator:
 ```
 sc.exe delete DuplicateCheckerService
-``` 
+```
+
+## Development
+
+To modify and rebuild the service:
+
+1. Make your changes to the source code
+2. Build the service:
+   ```
+   dotnet publish -c Release
+   ```
+3. Copy the new executable and configuration files to your service location
+4. Restart the service:
+   ```
+   sc.exe stop DuplicateCheckerService
+   sc.exe start DuplicateCheckerService
+   ``` 
