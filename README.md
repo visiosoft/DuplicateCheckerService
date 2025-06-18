@@ -127,4 +127,14 @@ To modify and rebuild the service:
    ```
    sc.exe stop DuplicateCheckerService
    sc.exe start DuplicateCheckerService
-   ``` 
+   ```
+
+## Example
+
+Here's an example of how the service detects duplicate files. I copied two files with the same image content but different names:
+
+![image](https://github.com/user-attachments/assets/1a4432d5-9acf-41fa-8562-a0b906857e04)
+
+The service detected these as duplicates:
+
+![image](https://github.com/user-attachments/assets/02045ff7-1c88-49ca-8053-9605e9790277)
